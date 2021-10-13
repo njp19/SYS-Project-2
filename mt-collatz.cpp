@@ -22,19 +22,39 @@ int computeCollatz(int num){
 	int numOfIterations = 0;
 	int valueSoFar = num;
 
-	while(valueSoFar != 1){
-		//The number is even if its divided by 2, and the result is zero.
-		if(valueSoFar % 2 == 0){
-			valueSoFar /= 2;
-			numOfIterations++;
-		}
+	if(num != 1){
+		while(valueSoFar != 1){
+			//The number is even if its divided by 2, and the result is zero.
+			if(valueSoFar % 2 == 0){
+				valueSoFar /= 2;
+				numOfIterations++;
+			}
 
-		//The number is negative.
-		else{
-			valueSoFar = (valueSoFar * 3) + 1;
-			numOfIterations++;
+			//The number is negative.
+			else{
+				valueSoFar = (valueSoFar * 3) + 1;
+				numOfIterations++;
+			}
 		}
-	}	
+	}
+
+	else{
+		valueSoFar = (valueSoFar * 3) + 1;
+
+		while(valueSoFar != 1){
+			//The number is even if ites divided by 2, and the result is zero.
+			if(valueSoFar % 2 == 0){
+				valueSoFar /= 2;
+				numOfIterations++;
+			}
+
+			//The number is negative.
+			else{
+				valueSoFar = (valueSoFar * 3) + 1;
+				numOfIterations++;
+			}
+		}
+	}
 
 	return numOfIterations;
 }
@@ -71,6 +91,7 @@ int main(int ARG_COUNT, char* argVect[]){
 	pthread_t* threads;
 
 	time.start();
+	computedTimes.at(0) = computedCollatz(1);
 
 	//If their are six arguments passed to the program we will do the file redirect and check for the -nolock command.
 	if(ARG_COUNT == 6){
