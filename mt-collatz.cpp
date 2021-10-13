@@ -18,6 +18,7 @@ int currentCollatz = 2;
 int numOfCollatz = 0;
 vector<int> computedTimes;
 
+
 int computeCollatz(int num){
 	int numOfIterations = 0;
 	int valueSoFar = num;
@@ -79,19 +80,22 @@ void* threadInstructions(){
 	pthread_exit(NULL);
 }
 
+
 int main(int ARG_COUNT, char* argVect[]){
 	int numOfThreads = 0;
 	bool lock = true;
 	bool outputRedirect = false;
 	bool outputRedirectAppend = false;
 	bool errorRedirect = false;
-	bool errorRedirect = false;
 	string fileName = "";
 	Timer time;
 	pthread_t* threads;
+	
+	cout << "Hello" << endl;
 
 	time.start();
-	computedTimes.at(0) = computedCollatz(1);
+	computedTimes.at(0) = computeCollatz(1);
+	/*
 
 	//If their are six arguments passed to the program we will do the file redirect and check for the -nolock command.
 	if(ARG_COUNT == 6){
@@ -306,4 +310,5 @@ int main(int ARG_COUNT, char* argVect[]){
 	time.stop();
 
 	pthread_exit(NULL);
+	*/
 }

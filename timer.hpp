@@ -16,7 +16,7 @@ using namespace std::chrono;
 class Timer{
 	private:
 		time_point<system_clock> startTime;
-		time_point<system_clock> endtime;
+		time_point<system_clock> endTime;
 		duration<double> elapsedTime;
 
 	public:
