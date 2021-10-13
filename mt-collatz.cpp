@@ -6,11 +6,17 @@
 
 #include <iostream>
 #include <vector>
+#include <thread>
+#include <mutex>
+#include <cstdio>
 #include "timer.hpp"
 
 using namespace std;
 
+mutex mx;
+int currentCollatz = 2;
 int numOfCollatz = 0;
+vector<int> computedTimes;
 
 int computeCollatz(int num){
 	int numOfIterations = 0;
@@ -33,6 +39,26 @@ int computeCollatz(int num){
 	return numOfIterations;
 }
 
+void* threadInstructions(){
+	while(currentCollatz <= numOfCollatz){
+		computedTimes.at(currentCollatz - 1) = computeCollatz(currentCollatz);
+
+		//Lock variable right here I guess.
+		if(lock == true){
+			mx.lock();
+		}
+
+		currentCollatz++;
+
+		//Unlock variable right here I guess.
+		if(lock == true){
+			mx.unlock();
+		}
+	}
+
+	pthread_exit(NULL);
+}
+
 int main(int ARG_COUNT, char* argVect[]){
 	int numOfThreads = 0;
 	bool lock = true;
@@ -42,7 +68,7 @@ int main(int ARG_COUNT, char* argVect[]){
 	bool errorRedirect = false;
 	string fileName = "";
 	Timer time;
-	vector<int> computedTimes;
+	pthread_t* threads;
 
 	time.start();
 
@@ -79,6 +105,7 @@ int main(int ARG_COUNT, char* argVect[]){
 
 			else{
 				numOfThreads = argVect[2];
+				threads = new pthread_t[numOfThreads];
 			}
 		}
 
@@ -122,6 +149,22 @@ int main(int ARG_COUNT, char* argVect[]){
 
 		if(argVect[5].isalnum()){
 			fileName = argVect[5];
+
+			if(outputRedirect == true){
+				freopen((char*)fileName, "w", stdout);
+			}
+
+			else if(errorRedirect == true){
+				freopen((char*)fileName, "w", stderr);
+			}
+
+			else if(outputRedirectAppend == true){
+				freopen((char*)fileName, "a", stdout);
+			}
+
+			else if(errorRedirectAppend == true){
+				freopen((char*)fileName, "a", stderr);
+			}
 		}
 
 		else{
@@ -163,6 +206,7 @@ int main(int ARG_COUNT, char* argVect[]){
 
 			else{
 				numOfThreads = argVect[2];
+				threads = new pthread_t[numOfThreads];
 			}
 		}
 
@@ -173,6 +217,7 @@ int main(int ARG_COUNT, char* argVect[]){
 		}
 
 		if(strcmp(argVect[3], "-nolock") == 0){
+			lock = false;
 		}
 
 		else{
@@ -214,6 +259,7 @@ int main(int ARG_COUNT, char* argVect[]){
 
 			else{
 				numOfThreads = argVect[2];
+				threads = new pthread_t[numOfThreads];
 			}
 		}
 
@@ -224,5 +270,19 @@ int main(int ARG_COUNT, char* argVect[]){
 		}
 	}
 
+	int returnValue = 0;
+
+	for(int i = 0; i < numOfThreads; i++){
+		returnValue = pthread_create(&threads[i], NULL, threadInstructions, NULL);
+
+		if(returnValue){
+			perror("ERROR: Unable to create thread.");
+		}
+	}
+
+	delete threads;
+
 	time.stop();
+
+	pthread_exit(NULL);
 }
