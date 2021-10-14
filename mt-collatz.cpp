@@ -12,7 +12,6 @@
 #include <cstring>
 #include "timer.hpp"
 
-//using namespace std;
 using std::cout;
 using std::cin;
 using std::cerr;
@@ -26,6 +25,7 @@ using std::stoi;
 mutex mx;
 int currentCollatz = 2;
 int numOfCollatz = 0;
+char* array;
 bool lock = true;
 vector<int> computedTimes;
 
@@ -74,19 +74,44 @@ void threadInstructions(){
 	while(currentCollatz <= numOfCollatz){
 		computedTimes.at(currentCollatz - 1) = computeCollatz(currentCollatz);
 
-		//Lock variable right here I guess.
+		//Lock variable right here so other threads cant change it at the same time causing undefined beavior.
 		if(lock == true){
 			mx.lock();
 		}
 
 		currentCollatz++;
 
-		//Unlock variable right here I guess.
+		//Unlock variable right so that other threads can update the currentCollatz variable.
 		if(lock == true){
 			mx.unlock();
 		}
 	}
-	//pthread_exit(NULL);
+}
+
+char* cStringToCxx(string word){
+	array = new char[word.size()];
+
+	for(long unsigned int i = 0; i < word.size(); i++){
+		array[i] = word.at(i);
+	}
+
+	cout << "filename: " << array << endl;
+
+	return array;
+}
+
+bool isNumber(string word){
+	bool isNumber = true;
+
+	for(long unsigned int i = 0; i < word.size(); i++){
+		if(isdigit(word.at(i)) == 0){
+			isNumber = false;
+
+			break;
+		}
+	}
+
+	return isNumber;
 }
 
 int main(int ARG_COUNT, char* argVect[]){
@@ -97,17 +122,12 @@ int main(int ARG_COUNT, char* argVect[]){
 	bool errorRedirectAppend = false;
 	string fileName = ""; 
 	Timer time;
-	//pthread_t* threads;
-	//thread* threads;
-	
-	cout << "Hello" << endl;
 
 	time.start();
-	//computedTimes.at(0) = computeCollatz(1);
 
 	//If their are six arguments passed to the program we will do the file redirect and check for the -nolock command.
 	if(ARG_COUNT == 6){
-		if(isdigit(stoi(argVect[1]))){
+		if(isNumber(argVect[1]) == true){
 			if((stoi(argVect[1]) < 2) || (stoi(argVect[1]) > 10000)){
 				cerr << "ERROR: Only numbers between 2 and 10000 are acceptable." << endl;
 
@@ -129,7 +149,7 @@ int main(int ARG_COUNT, char* argVect[]){
 			exit(-1);
 		}
 
-		if(isdigit(stoi(argVect[2]))){
+		if(isNumber(argVect[2]) == true){
 			if(stoi(argVect[2]) > numOfCollatz){
 				cerr << "ERROR: The number of threads cannot exceed the number of collatz sequences to compute." << endl;
 
@@ -138,7 +158,6 @@ int main(int ARG_COUNT, char* argVect[]){
 
 			else{
 				numOfThreads = stoi(argVect[2]);
-				//threads = new pthread_t[numOfThreads];
 			}
 		}
 
@@ -184,33 +203,32 @@ int main(int ARG_COUNT, char* argVect[]){
 		fileName = argVect[5];
 
 		if(outputRedirect == true){
-			freopen((char*)fileName, "w", stdout);
+			freopen(cStringToCxx(fileName), "w", stdout);
 		}
 
 		else if(errorRedirect == true){
-			freopen((char*)fileName, "w", stderr);
+			freopen(cStringToCxx(fileName), "w", stderr);
 		}
 
 		else if(outputRedirectAppend == true){
-			freopen((char*)fileName, "a", stdout);
+			freopen(cStringToCxx(fileName), "a", stdout);
 		}
 
 		else if(errorRedirectAppend == true){
-			freopen((char*)fileName, "a", stderr);
+			freopen(cStringToCxx(fileName), "a", stderr);
 		}
 	}
 
-	/*
 	else if(ARG_COUNT == 4){
-		if(argVect[1].isdigit()){
-			if((argVect[1] < 2) || (argVect[1] > 10000)){
+		if(isNumber(argVect[1]) == true){
+			if((stoi(argVect[1]) < 2) || (stoi(argVect[1]) > 10000)){
 				cerr << "ERROR: Only numbers between 2 and 10000 are acceptable." << endl;
 
 				exit(-1);
 			}
 
 			else{
-				numOfCollatz = argVect[1];
+				numOfCollatz = stoi(argVect[1]);
 
 				for(int i = 0; i < numOfCollatz; i++){
 					computedTimes.push_back(0);
@@ -224,16 +242,15 @@ int main(int ARG_COUNT, char* argVect[]){
 			exit(-1);
 		}
 
-		if(argVect[2].isdigit()){
-			if(argVect[2] > numOfCallatz){
+		if(isNumber(argVect[2]) == true){
+			if(stoi(argVect[2]) > numOfCollatz){
 				cerr << "ERROR: the number of threads cannot exceed the number of collatz sequences to compute." << endl;
 
 				exit(-1);
 			}
 
 			else{
-				numOfThreads = argVect[2];
-				//threads = new pthread_t[numOfThreads];
+				numOfThreads = stoi(argVect[2]);
 			}
 		}
 
@@ -255,15 +272,15 @@ int main(int ARG_COUNT, char* argVect[]){
 	}
 
 	else if(ARG_COUNT == 3){
-		if(argVect[1].isdigit()){
-			if((argVect[1] < 2) || (argVect[1] > 10000)){
+		if(isNumber(argVect[1]) == true){
+			if((stoi(argVect[1]) < 2) || (stoi(argVect[1]) > 10000)){
 				cerr << "ERROR: Only numbers between 2 and 10000 are acceptable." << endl;
 
 				exit(-1);
 			}
 
 			else{
-				numOfCollatz = argVect[1];
+				numOfCollatz = stoi(argVect[1]);
 
 				for(int i = 0; i < numOfCollatz; i++){
 					computedTimes.push_back(0);
@@ -277,16 +294,15 @@ int main(int ARG_COUNT, char* argVect[]){
 			exit(-1);
 		}
 	
-		if(argVect[2].isdigit()){
-			if(argVect[2] > numOfCollatz){
+		if(isNumber(argVect[2]) == true){
+			if(stoi(argVect[2]) > numOfCollatz){
 				cerr << "ERROR: The number of threads cannot exceed the number of collatz sequences to compute." << endl;
 
 				exit(-1);
 			}
 
 			else{
-				numOfThreads = argVect[2];
-				//threads = new pthread_t[numOfThreads];
+				numOfThreads = stoi(argVect[2]);
 			}
 		}
 
@@ -297,16 +313,10 @@ int main(int ARG_COUNT, char* argVect[]){
 		}
 	}
 
-	//int returnValue = 0;
 	thread threads[numOfThreads];
 
 	for(int i = 0; i < numOfThreads; i++){
-		//returnValue = pthread_create(&threads[i], NULL, threadInstructions, NULL);
 		threads[i] = thread(threadInstructions);
-
-		//if(returnValue){
-			//cerr << "ERROR: Unable to create thread." << endl;
-		//}
 	}
 
 	computedTimes.at(0) = computeCollatz(1);
@@ -315,7 +325,7 @@ int main(int ARG_COUNT, char* argVect[]){
 		threads[i].join();
 	}
 
-	delete threads;
+	delete array;
 
 	time.stop();
 
@@ -324,8 +334,6 @@ int main(int ARG_COUNT, char* argVect[]){
 	}
 
 	cerr << numOfCollatz << ", " << numOfThreads << ", " << time.getElapsedTime() << endl;
-	//pthread_exit(NULL);
-	*/
 	
 	return 0;
 }

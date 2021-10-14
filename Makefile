@@ -5,7 +5,7 @@
 #The compiler to use.
 CXX = g++
 #The flags to use.
-CXXFLAGS = -g -std=c++11 -Wall -Werror=return-type -Werror=uninitialized
+CXXFLAGS = -g -std=c++11 -Wall -lpthread -Werror=return-type -Werror=uninitialized
 
 #The list of object files of the classes.
 SOURCES = Timer.o
