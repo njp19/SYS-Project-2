@@ -11,13 +11,21 @@
 #include <cstdio>
 #include "timer.hpp"
 
-using namespace std;
+//using namespace std;
+using std::cout;
+using std::cin;
+using std::cerr;
+using std::mutex;
+using std::vector;
+using std::string;
+using std::endl;
+using std::thread;
 
 mutex mx;
 int currentCollatz = 2;
 int numOfCollatz = 0;
+bool lock = true;
 vector<int> computedTimes;
-
 
 int computeCollatz(int num){
 	int numOfIterations = 0;
@@ -60,7 +68,7 @@ int computeCollatz(int num){
 	return numOfIterations;
 }
 
-void* threadInstructions(){
+void threadInstructions(){
 	while(currentCollatz <= numOfCollatz){
 		computedTimes.at(currentCollatz - 1) = computeCollatz(currentCollatz);
 
@@ -76,32 +84,31 @@ void* threadInstructions(){
 			mx.unlock();
 		}
 	}
-
-	pthread_exit(NULL);
+	//pthread_exit(NULL);
 }
-
 
 int main(int ARG_COUNT, char* argVect[]){
 	int numOfThreads = 0;
-	bool lock = true;
 	bool outputRedirect = false;
 	bool outputRedirectAppend = false;
 	bool errorRedirect = false;
+	bool errorRedirectAppend = false;
 	string fileName = "";
+	string 
 	Timer time;
-	pthread_t* threads;
+	//pthread_t* threads;
+	//thread* threads;
 	
 	cout << "Hello" << endl;
 
 	time.start();
-	computedTimes.at(0) = computeCollatz(1);
-	/*
+	//computedTimes.at(0) = computeCollatz(1);
 
 	//If their are six arguments passed to the program we will do the file redirect and check for the -nolock command.
 	if(ARG_COUNT == 6){
-		if(argVect[1].isdigit()){
+		if(isdigit((int)(argVect[1]))){
 			if((argVect[1] < 2) || (argVect[1] > 10000)){
-				cout << "ERROR: Only numbers between 2 and 10000 are acceptable." << endl;
+				cerr << "ERROR: Only numbers between 2 and 10000 are acceptable." << endl;
 
 				exit(-1);
 			}
@@ -116,14 +123,14 @@ int main(int ARG_COUNT, char* argVect[]){
 		}
 
 		else{
-			cout << "ERROR: Expected the number of collatz sequences to compute." << endl;
+			cerr << "ERROR: Expected the number of collatz sequences to compute." << endl;
 
 			exit(-1);
 		}
 
-		if(argVect[2].isdigit()){
+		if(isdigit((int)argVect[2])){
 			if(argVect[2] > numOfCollatz){
-				cout << "ERROR: The number of threads cannot exceed the number of collatz sequences to compute." << endl;
+				cerr << "ERROR: The number of threads cannot exceed the number of collatz sequences to compute." << endl;
 
 				exit(-1);
 			}
@@ -135,7 +142,7 @@ int main(int ARG_COUNT, char* argVect[]){
 		}
 
 		else{
-			cout << "ERROR: Expected the number of threads needed to compute the collatz sequences." << endl;
+			cerr << "ERROR: Expected the number of threads needed to compute the collatz sequences." << endl;
 
 			exit(-1);
 		}
@@ -145,7 +152,7 @@ int main(int ARG_COUNT, char* argVect[]){
 		}
 
 		else{
-			cout << "ERROR: Expected \"-nolock\" command." << endl;
+			cerr << "ERROR: Expected \"-nolock\" command." << endl;
 
 			exit(-1);
 		}
@@ -167,12 +174,12 @@ int main(int ARG_COUNT, char* argVect[]){
 		}
 
 		else{
-			cout << "ERROR: Expected the \">\", \"2>\", \">>\" or \"2>>\" redirect symbols." << endl;
+			cerr << "ERROR: Expected the \">\", \"2>\", \">>\" or \"2>>\" redirect symbols." << endl;
 
 			exit(-1);
 		}
 
-		if(argVect[5].isalnum()){
+		if(isalnum(argVect[5])){
 			fileName = argVect[5];
 
 			if(outputRedirect == true){
@@ -193,16 +200,17 @@ int main(int ARG_COUNT, char* argVect[]){
 		}
 
 		else{
-			cout << "ERROR: Expected a file name here." << endl;
+			cerr << "ERROR: Expected a file name here." << endl;
 
 			exit(-1);	
 		}
 	}
 
+	/*
 	else if(ARG_COUNT == 4){
 		if(argVect[1].isdigit()){
 			if((argVect[1] < 2) || (argVect[1] > 10000)){
-				cout << "ERROR: Only numbers between 2 and 10000 are acceptable." << endl;
+				cerr << "ERROR: Only numbers between 2 and 10000 are acceptable." << endl;
 
 				exit(-1);
 			}
@@ -217,14 +225,14 @@ int main(int ARG_COUNT, char* argVect[]){
 		}
 
 		else{
-			cout << "ERROR: Expected the number of collatz sequences to compute." << endl;
+			cerr << "ERROR: Expected the number of collatz sequences to compute." << endl;
 
 			exit(-1);
 		}
 
 		if(argVect[2].isdigit()){
 			if(argVect[2] > numOfCallatz){
-				cout << "ERROR: the number of threads cannot exceed the number of collatz sequences to compute." << endl;
+				cerr << "ERROR: the number of threads cannot exceed the number of collatz sequences to compute." << endl;
 
 				exit(-1);
 			}
@@ -236,7 +244,7 @@ int main(int ARG_COUNT, char* argVect[]){
 		}
 
 		else{
-			cout << "ERROR: Expected the number of threads needed to compute the collatz sequences." << endl;
+			cerr << "ERROR: Expected the number of threads needed to compute the collatz sequences." << endl;
 
 			exit(-1);
 		}
@@ -246,7 +254,7 @@ int main(int ARG_COUNT, char* argVect[]){
 		}
 
 		else{
-			cout << "ERROR: Expected the \"-nolock\" command." << endl;
+			cerr << "ERROR: Expected the \"-nolock\" command." << endl;
 
 			exit(-1);
 		}
@@ -255,7 +263,7 @@ int main(int ARG_COUNT, char* argVect[]){
 	else if(ARG_COUNT == 3){
 		if(argVect[1].isdigit()){
 			if((argVect[1] < 2) || (argVect[1] > 10000)){
-				cout << "ERROR: Only numbers between 2 and 10000 are acceptable." << endl;
+				cerr << "ERROR: Only numbers between 2 and 10000 are acceptable." << endl;
 
 				exit(-1);
 			}
@@ -270,14 +278,14 @@ int main(int ARG_COUNT, char* argVect[]){
 		}
 
 		else{
-			cout << "ERROR: Expected the number of collatz sequences to compute." << endl;
+			cerr << "ERROR: Expected the number of collatz sequences to compute." << endl;
 
 			exit(-1);
 		}
 	
 		if(argVect[2].isdigit()){
 			if(argVect[2] > numOfCollatz){
-				cout << "ERROR: The number of threads cannot exceed the number of collatz sequences to compute." << endl;
+				cerr << "ERROR: The number of threads cannot exceed the number of collatz sequences to compute." << endl;
 
 				exit(-1);
 			}
@@ -289,26 +297,41 @@ int main(int ARG_COUNT, char* argVect[]){
 		}
 
 		else{
-			cout << "ERROR: Expected the number of threads needed to compute the collatz sequences." << endl;
+			cerr << "ERROR: Expected the number of threads needed to compute the collatz sequences." << endl;
 
 			exit(-1);
 		}
 	}
 
-	int returnValue = 0;
+	//int returnValue = 0;
+	thread threads[numOfThreads];
 
 	for(int i = 0; i < numOfThreads; i++){
-		returnValue = pthread_create(&threads[i], NULL, threadInstructions, NULL);
+		//returnValue = pthread_create(&threads[i], NULL, threadInstructions, NULL);
+		threads[i] = thread(threadInstructions);
 
-		if(returnValue){
-			perror("ERROR: Unable to create thread.");
-		}
+		//if(returnValue){
+			//cerr << "ERROR: Unable to create thread." << endl;
+		//}
+	}
+
+	computedTimes.at(0) = computeCollatz(1);
+
+	for(int i = 0; i < numOfThreads; i++){
+		threads[i].join();
 	}
 
 	delete threads;
 
 	time.stop();
 
-	pthread_exit(NULL);
+	for(long unsigned int i = 0; i < computedTimes.size(); i++){
+		cout << i + 1 << "," << computedTimes.at(i) << endl;
+	}
+
+	cerr << numOfCollatz << ", " << numOfThreads << ", " << time.getElapsedTime() << endl;
+	//pthread_exit(NULL);
 	*/
+	
+	return 0;
 }
