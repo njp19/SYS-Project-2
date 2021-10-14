@@ -9,6 +9,7 @@
 #include <thread>
 #include <mutex>
 #include <cstdio>
+#include <cstring>
 #include "timer.hpp"
 
 //using namespace std;
@@ -20,6 +21,7 @@ using std::vector;
 using std::string;
 using std::endl;
 using std::thread;
+using std::stoi;
 
 mutex mx;
 int currentCollatz = 2;
@@ -93,8 +95,7 @@ int main(int ARG_COUNT, char* argVect[]){
 	bool outputRedirectAppend = false;
 	bool errorRedirect = false;
 	bool errorRedirectAppend = false;
-	string fileName = "";
-	string 
+	string fileName = ""; 
 	Timer time;
 	//pthread_t* threads;
 	//thread* threads;
@@ -106,15 +107,15 @@ int main(int ARG_COUNT, char* argVect[]){
 
 	//If their are six arguments passed to the program we will do the file redirect and check for the -nolock command.
 	if(ARG_COUNT == 6){
-		if(isdigit((int)(argVect[1]))){
-			if((argVect[1] < 2) || (argVect[1] > 10000)){
+		if(isdigit(stoi(argVect[1]))){
+			if((stoi(argVect[1]) < 2) || (stoi(argVect[1]) > 10000)){
 				cerr << "ERROR: Only numbers between 2 and 10000 are acceptable." << endl;
 
 				exit(-1);
 			}
 
 			else{
-				numOfCollatz = argVect[1];
+				numOfCollatz = stoi(argVect[1]);
 
 				for(int i = 0; i < numOfCollatz; i++){
 					computedTimes.push_back(0);
@@ -128,16 +129,16 @@ int main(int ARG_COUNT, char* argVect[]){
 			exit(-1);
 		}
 
-		if(isdigit((int)argVect[2])){
-			if(argVect[2] > numOfCollatz){
+		if(isdigit(stoi(argVect[2]))){
+			if(stoi(argVect[2]) > numOfCollatz){
 				cerr << "ERROR: The number of threads cannot exceed the number of collatz sequences to compute." << endl;
 
 				exit(-1);
 			}
 
 			else{
-				numOfThreads = argVect[2];
-				threads = new pthread_t[numOfThreads];
+				numOfThreads = stoi(argVect[2]);
+				//threads = new pthread_t[numOfThreads];
 			}
 		}
 
@@ -179,30 +180,23 @@ int main(int ARG_COUNT, char* argVect[]){
 			exit(-1);
 		}
 
-		if(isalnum(argVect[5])){
-			fileName = argVect[5];
+		//FIXME mayebe file names have a specific structure to follow, do we check?
+		fileName = argVect[5];
 
-			if(outputRedirect == true){
-				freopen((char*)fileName, "w", stdout);
-			}
-
-			else if(errorRedirect == true){
-				freopen((char*)fileName, "w", stderr);
-			}
-
-			else if(outputRedirectAppend == true){
-				freopen((char*)fileName, "a", stdout);
-			}
-
-			else if(errorRedirectAppend == true){
-				freopen((char*)fileName, "a", stderr);
-			}
+		if(outputRedirect == true){
+			freopen((char*)fileName, "w", stdout);
 		}
 
-		else{
-			cerr << "ERROR: Expected a file name here." << endl;
+		else if(errorRedirect == true){
+			freopen((char*)fileName, "w", stderr);
+		}
 
-			exit(-1);	
+		else if(outputRedirectAppend == true){
+			freopen((char*)fileName, "a", stdout);
+		}
+
+		else if(errorRedirectAppend == true){
+			freopen((char*)fileName, "a", stderr);
 		}
 	}
 
@@ -239,7 +233,7 @@ int main(int ARG_COUNT, char* argVect[]){
 
 			else{
 				numOfThreads = argVect[2];
-				threads = new pthread_t[numOfThreads];
+				//threads = new pthread_t[numOfThreads];
 			}
 		}
 
@@ -292,7 +286,7 @@ int main(int ARG_COUNT, char* argVect[]){
 
 			else{
 				numOfThreads = argVect[2];
-				threads = new pthread_t[numOfThreads];
+				//threads = new pthread_t[numOfThreads];
 			}
 		}
 
