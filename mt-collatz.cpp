@@ -26,6 +26,7 @@ static int range_to_compute_collatz_min = 2;     // 2 means cannot ask program t
 static int range_to_compute_collatz_max = 10000; // max means cannot ask to compute collatz sequences for numbers between 0 to 10001 or greater if max = 10000
 
 mutex mx;
+mutex mx2;
 int currentCollatz = 2;
 int numOfCollatz = 0;
 // char* array; FIXME may need to uncomment
@@ -41,6 +42,7 @@ bool isEven(int numToCheck){
 
 // method below computes the full collatz sequence for the _1stTerm given
 int computeCollatz(int _1stTerm){
+
 	int numOfIterations = 0;
 	int valueSoFar = 1;
 
@@ -89,20 +91,19 @@ void threadInstructions(){
 	// code block
 	// iterates through all collatz
 	while(currentCollatz <= numOfCollatz){ // keep going until last collatz
-		// computedTimes.at(currentCollatz - 1) /* <-  */ = /*  -> */ computeCollatz(currentCollatz);
 
 		//Lock variable right here so other threads can't change it at the same time causing undefined behavior.
 		if(no_lock == true){ 	// if user wants to avoid locking mechanism
 			
 			// Critical Section
-			computedTimes.at(currentCollatz - 1) /* <-  */ = /*  -> */ computeCollatz(currentCollatz);
+			computedTimes.at(currentCollatz - 1) = computeCollatz(currentCollatz);
 			currentCollatz++;
 		}
 		else { // user wants to keep locking mechanism
 			mx.lock();
 
 			// Critical Section
-			computedTimes.at(currentCollatz - 1) /* <-  */ = /*  -> */ computeCollatz(currentCollatz);
+			computedTimes.at(currentCollatz - 1) = computeCollatz(currentCollatz);
 			currentCollatz++;
 			
 			mx.unlock();
@@ -314,7 +315,12 @@ int main(int ARG_COUNT, char* argVect[]){
 			threads[i] = thread(threadInstructions); // pass each thread a starting point
 		}
 
+
+		// put a lock here since you have the join after this rather than before
+		// so multiple threads might get access to this == not necessarily race condition but seems more wasteful without lock
+		mx2.lock();	
 		computedTimes.at(0) = computeCollatz(1);
+		mx2.unlock();
 
 		for(int i = 0; i < numOfThreads; i++){
 			threads[i].join();
@@ -328,6 +334,19 @@ int main(int ARG_COUNT, char* argVect[]){
 		for(long unsigned int i = 0; i < computedTimes.size(); i++){
 			cout << i + 1 << "," << computedTimes.at(i) << endl;
 		}
+
+
+		// where I started implementing frequency counter
+		// 
+		int n = computedTimes.size();
+		int count = 0;
+		int x = 3; // x should be i of the outer loop that encapsulates this function. So two loops total
+		for(int i = 0; i < n; i++){
+			if(computedTimes.at(i) == x){
+				count++;
+			}
+		}	
+
 
 		cerr << numOfCollatz << ", " << numOfThreads << ", " << time.getElapsedTime() << endl;
 
