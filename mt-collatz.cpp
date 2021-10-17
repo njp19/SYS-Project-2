@@ -105,17 +105,14 @@ void threadInstructions(){
 	while(currentCollatz < numOfCollatz){//Keep going until last collatz.
 		//Lock variable right here so other threads can't change it at the same time causing undefined behavior.
 		if((no_lock == true) || (numOfThreads == 1)){//If user wants to avoid locking mechanism.
-			if(currentCollatz < numOfCollatz){
-				tempValue = computeCollatz(currentCollatz);
+			tempCollatz = currentCollatz;
+			++currentCollatz;
+			tempValue = computeCollatz(tempCollatz);
+			computedIterations.at(tempCollatz) = tempValue;
 
-				computedIterations.at(currentCollatz) = tempValue;
-
-				if(tempValue < numOfCollatz){
-					frequency.at(tempValue) += 1;
-				}
+			if(tempValue < numOfCollatz){
+				frequency.at(tempValue) += 1;
 			}
-
-			currentCollatz++;
 		}
 
 		else{//User wants to keep locking mechanism.
@@ -129,7 +126,6 @@ void threadInstructions(){
 
 			if(tempCollatz < numOfCollatz){
 				tempValue = computeCollatz(tempCollatz);
-
 				computedIterations.at(tempCollatz) = tempValue;
 
 				mx.lock();
@@ -254,12 +250,12 @@ int main(int ARG_COUNT, char* argVect[]){
 
 		for(long i = 0; i < numOfCollatz; i++){
 			computedIterations.push_back(0);
-			frequency.push_back(0);
+			//frequency.push_back(0);
 		}
 
-		//for(int i = 0; i <= 10000; i++){
-			//frequency.push_back(0);
-		//}
+		for(int i = 0; i < 1000; i++){
+			frequency.push_back(0);
+		}
 
 		//If their are six arguments passed to the program we will do the file redirect and check for the -nolock command.
 		if(ARG_COUNT == 6){//Handle 6 args.
