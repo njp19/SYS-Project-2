@@ -33,6 +33,7 @@ int numOfCollatz = 0;
 //char* array; FIXME may need to uncomment.
 bool no_lock = false;
 vector<int> frequency;
+vector<int> nthTerm;
 vector<int> computedIterations;
 static int COLLATZ_STOPPING_POINT = 1;
 
@@ -194,9 +195,13 @@ void handleNanException(int argNum){
 int searchVector(int value){
 	int frequency = 0;
 
-	for(long unsigned int i = 0; i < computedIterations.size(); i++){
-		if(computedIterations.at(i) == value){
-			frequency++;
+	if(value != 0){
+		for(long unsigned int i = 0; i < computedIterations.size(); i++){
+			if(computedIterations.at(i) == value){
+				frequency++;
+				//This is to make sure numbers are not checked more than once. -1 because its not in the computedIterations vector.
+				computedIterations.at(i) = -1;
+			}
 		}
 	}
 
@@ -242,6 +247,10 @@ int main(int ARG_COUNT, char* argVect[]){
 			computedIterations.push_back(0);
 			frequency.push_back(0);
 		}
+
+		//for(int i = 0; i <= 10000; i++){
+			//frequency.push_back(0);
+		//}
 
 		//If their are six arguments passed to the program we will do the file redirect and check for the -nolock command.
 		if(ARG_COUNT == 6){//Handle 6 args.
@@ -372,8 +381,10 @@ int main(int ARG_COUNT, char* argVect[]){
 		}
 		*/
 
-		for(long unsigned int i = 0; i < computedIterations.size(); i++){
-			frequency.at(i) = searchVector(computedIterations.at(i));
+		for(int i = 0; i <= numOfCollatz; i++){
+			frequency.at(i) = searchVector(i);
+			//frequency.at(i) = searchVector(computedIterations.at(i));
+			//frequency.at(computedIterations.at(i)) = searchVector(computedIterations.at(i));
 		}
 
 		for(long unsigned int i = 0; i < frequency.size(); i++){
