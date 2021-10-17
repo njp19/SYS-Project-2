@@ -104,7 +104,7 @@ void threadInstructions(){
 	//Iterates through all collatz.
 	while(currentCollatz < numOfCollatz){//Keep going until last collatz.
 		//Lock variable right here so other threads can't change it at the same time causing undefined behavior.
-		if((no_lock == true) || (numOfThreads == 1)){//If user wants to avoid locking mechanism.
+		if(no_lock == true){//If user wants to avoid locking mechanism.
 			tempCollatz = currentCollatz;
 			++currentCollatz;
 			tempValue = computeCollatz(tempCollatz);
@@ -130,9 +130,9 @@ void threadInstructions(){
 
 				mx.lock();
 
-				if(tempValue < numOfCollatz){
+				//if(tempValue < numOfCollatz){
 					frequency.at(tempValue) += 1;
-				}
+				//}
 
 				mx.unlock();
 			}
