@@ -98,13 +98,15 @@ long computeCollatz(long _1stTerm){
 }
 
 void threadInstructions(){
+	long tempValue = 0;
+	long tempCollatz = 0;
+
 	//Iterates through all collatz.
 	while(currentCollatz < numOfCollatz){//Keep going until last collatz.
 		//Lock variable right here so other threads can't change it at the same time causing undefined behavior.
 		if((no_lock == true) || (numOfThreads == 1)){//If user wants to avoid locking mechanism.
-			//computedTimes.at(currentCollatz - 1) = computeCollatz(currentCollatz);
 			if(currentCollatz < numOfCollatz){
-				long tempValue = computeCollatz(currentCollatz);
+				tempValue = computeCollatz(currentCollatz);
 
 				computedIterations.at(currentCollatz) = tempValue;
 
@@ -119,14 +121,14 @@ void threadInstructions(){
 		else{//User wants to keep locking mechanism.
 			mx.lock();
 
-			long tempCollatz = currentCollatz;
+			tempCollatz = currentCollatz;
 
 			++currentCollatz;
 
 			mx.unlock();
 
 			if(tempCollatz < numOfCollatz){
-				long tempValue = computeCollatz(tempCollatz);
+				tempValue = computeCollatz(tempCollatz);
 
 				computedIterations.at(tempCollatz) = tempValue;
 
