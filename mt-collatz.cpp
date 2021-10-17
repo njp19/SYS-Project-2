@@ -2,7 +2,7 @@
  * @author Adiessa Bell and Nathanael Pelling
  * @date 10/12/2021
  * @info course COP4634
- */
+*/
 
 #include <iostream>
 #include <vector>
@@ -11,6 +11,7 @@
 #include <cstdio>
 #include <cstring>
 #include "timer.hpp"
+#include "frequency.hpp"
 
 using std::cout;
 using std::cin;
@@ -22,96 +23,118 @@ using std::endl;
 using std::thread;
 using std::stoi;
 
-static int range_to_compute_collatz_min = 2;     // 2 means cannot ask program to compute collatz sequences for numbers between 0 to 1, 0, or anything smaller
-static int range_to_compute_collatz_max = 10000; // max means cannot ask to compute collatz sequences for numbers between 0 to 10001 or greater if max = 10000
+static int range_to_compute_collatz_min = 2;//2 min means cannot ask program to compute collatz sequences for numbers smaller that 2.
+static int range_to_compute_collatz_max = 1000000;//max means cannot ask program to compute collatz sequences for numbers greater than 10000.
 
 mutex mx;
-mutex mx2;
 int currentCollatz = 2;
 int numOfCollatz = 0;
-// char* array; FIXME may need to uncomment
+//Frequency histogram;
+//char* array; FIXME may need to uncomment.
 bool no_lock = false;
-vector<int> computedTimes;
+vector<int> frequency;
+vector<int> computedIterations;
 static int COLLATZ_STOPPING_POINT = 1;
-
 
 bool isEven(int numToCheck){
 	return numToCheck % 2 == 0;
 }
 
-
-// method below computes the full collatz sequence for the _1stTerm given
+//Method below computes the full collatz sequence for the _1stTerm given.
 int computeCollatz(int _1stTerm){
-
 	int numOfIterations = 0;
-	int valueSoFar = 1;
+	int valueSoFar = _1stTerm;
 
-	if(_1stTerm != COLLATZ_STOPPING_POINT){ // done if sequence computation complete
-		while(valueSoFar != COLLATZ_STOPPING_POINT){ // iterate while not complete
-
+	//if(_1stTerm != COLLATZ_STOPPING_POINT){//Done if sequence computation complete.
+		while(valueSoFar != COLLATZ_STOPPING_POINT){//Iterate while not complete.
 			//The number is even if its divided by 2, and the result is zero.
-			if(	isEven(valueSoFar) ) { // if n is even,
-				valueSoFar /= 2; 				 // n/2
+			if(isEven(valueSoFar) == true){//If n is even,
+				valueSoFar/= 2;
 			}
 
-			//The number is negative. FIXME did you mean "The number is odd", Adiessa?
+			//The number is odd.
 			else{
 				valueSoFar = (valueSoFar * 3) + 1;
-			}	
+			}
 
-			numOfIterations++; // frequency counter
+			numOfIterations++;//Number of steps to compute the collatz sequence.
 		}
-	}
-	// FIXME this doesn't seem right
-	else{ // _1stTerm is a stopping point - no sequence exists
-		/*
-		valueSoFar = (valueSoFar * 3) + 1;
+
+		//histogram.incrementFrequency(numOfIterations);
+
+		//if((numOfIterations >= 0) && ()i){
+			//frequency.at(numOfIterations) += 1;
+		//}
+	//}
+
+	/*
+	//FIXME this doesn't seem right.
+	else{//_1stTerm is a stopping point - no sequence exists.
+		valueSoFar = 4;
+		numOfIterations++;
 
 		while(valueSoFar != 1){
 			// The number is even if it's divided by 2, and the result is zero.
 			if(valueSoFar % 2 == 0){
-				valueSoFar /= 2;
-				numOfIterations++;
+				valueSoFar/= 2;
 			}
 
-			//The number is negative.
+			//The number is odd.
 			else{
 				valueSoFar = (valueSoFar * 3) + 1;
-				numOfIterations++;
 			}
+
+			numOfIterations++;
 		}
-		*/
+
+		frequency.at(numOfIterations) = frequency.at(numOfIterations) + 1;
 	}
+	*/
+	
 	return numOfIterations;
 }
 
-
 void threadInstructions(){
-
-	// code block
-	// iterates through all collatz
-	while(currentCollatz <= numOfCollatz){ // keep going until last collatz
-
+	//Iterates through all collatz.
+	while(currentCollatz <= numOfCollatz){//Keep going until last collatz.
 		//Lock variable right here so other threads can't change it at the same time causing undefined behavior.
-		if(no_lock == true){ 	// if user wants to avoid locking mechanism
-			
-			// Critical Section
-			computedTimes.at(currentCollatz - 1) = computeCollatz(currentCollatz);
+		if(no_lock == true){//If user wants to avoid locking mechanism.
+			//computedTimes.at(currentCollatz - 1) = computeCollatz(currentCollatz);
+			if(currentCollatz <= numOfCollatz){
+				computedIterations.at(currentCollatz) = computeCollatz(currentCollatz);
+			}
+
 			currentCollatz++;
 		}
-		else { // user wants to keep locking mechanism
-			mx.lock();
 
-			// Critical Section
-			computedTimes.at(currentCollatz - 1) = computeCollatz(currentCollatz);
-			currentCollatz++;
-			
+		else {//User wants to keep locking mechanism.
+			mx.lock();
+			int tempCollatz = currentCollatz;
+
+			++currentCollatz;
 			mx.unlock();
+
+			if(tempCollatz <= numOfCollatz){
+				int tempValue = computeCollatz(tempCollatz);
+
+				computedIterations.at(tempCollatz) = tempValue;
+
+				/*
+				mx.lock();
+
+				if(tempValue <= numOfCollatz){
+					frequency.at(tempValue) += 1;
+				}
+
+				mx.unlock();
+				//histogram.incrementFrequency(tempValue);
+				*/
+			}
 		}
 	}
 }
 
-/* FIXME may need to uncomment this if need freopen stuff
+/* FIXME may need to uncomment this if need freopen stuff.
 char* cStringToCxx(string word){
 	array = new char[word.size()];
 
@@ -140,10 +163,11 @@ bool isNumber(string word){
 }
 
 
-bool isOutOfRange(int last /* last & greatest number to compute collatz for */ ) {
-	if((last < range_to_compute_collatz_min) || last > range_to_compute_collatz_max){
+bool isOutOfRange(int last){//Last & greatest number to compute collatz for.
+	if((last < range_to_compute_collatz_min) || (last > range_to_compute_collatz_max)){
 		return true;
 	}
+
 	return false;
 }
 
@@ -159,6 +183,7 @@ void handleNanException(int argNum){
 	if(argNum == 1){	
 		cerr << "ERROR: Expected the number of collatz sequences to compute." << endl;
 	}
+
 	else if(argNum == 2){
 		cerr << "ERROR: Expected the number of threads needed to compute the collatz sequences." << endl;
 	}
@@ -166,66 +191,84 @@ void handleNanException(int argNum){
 	exit(-1);
 }
 
+int searchVector(int value){
+	int frequency = 0;
+
+	for(long unsigned int i = 0; i < computedIterations.size(); i++){
+		if(computedIterations.at(i) == value){
+			frequency++;
+		}
+	}
+
+	return frequency;
+}
 
 int main(int ARG_COUNT, char* argVect[]){
 	int numOfThreads = 0;
+	/*
 	bool outputRedirect = false;
 	bool outputRedirectAppend = false;
 	bool errorRedirect = false;
 	bool errorRedirectAppend = false;
-
+	*/
 	string fileName = ""; 
 	Timer time;
 
 	time.start();
 
-	// arg 1 and 2 error checking routine
-	if(ARG_COUNT == 1){ // if only have the file argument
-		cerr <<"ERROR: missing arguments required to compute collatz." << endl;
+	//Arg 1 and 2 error checking routine.
+	if(ARG_COUNT == 1){//If only have the file argument.
+		cerr << "ERROR: missing arguments required to compute collatz." << endl;
 	}
-	else if( isOutOfRange( stoi(argVect[1]) ) ){ // if user tries to enter an argument in range
+
+	else if(isOutOfRange(stoi(argVect[1]))){//If user tries to enter an argument in range.
 		handleOutOfRangeException();					
 	}
-	else if( isNumber(argVect[1]) == false ) {
+
+	else if(isNumber(argVect[1]) == false){
 		handleNanException(1);
-	}	
-	else if( isNumber(argVect[2]) == false ){
+	}
+
+	else if(isNumber(argVect[2]) == false){
 		handleNanException(2);	
 	}
-	else{ // with some intitial error checking out of the way, proceed with program
 
-		// initialize array computedTimes with size numOfCollatz and the num '0'
+	else{//With some intitial error checking out of the way, proceed with program.
+		//Initialize array computedTimes with size numOfCollatz and the num '0'.
 		numOfCollatz = stoi(argVect[1]);
-		for(int i = 0; i < numOfCollatz; i++){
-			computedTimes.push_back(0); 		
+		//histogram.initVector(numOfCollatz);
+
+		for(int i = 0; i <= numOfCollatz; i++){
+			computedIterations.push_back(0);
+			frequency.push_back(0);
 		}
 
-	
-
 		//If their are six arguments passed to the program we will do the file redirect and check for the -nolock command.
-		if(ARG_COUNT == 6){ // handle 6 args	
-
-			// handle arg 2
+		if(ARG_COUNT == 6){//Handle 6 args.
+			//Handle arg 2.
 			if(stoi(argVect[2]) > numOfCollatz){
 				cerr << "ERROR: The number of threads cannot exceed the number of collatz sequences to compute." << endl;
 
 				exit(-1);
 			}
+
 			else{
 				numOfThreads = stoi(argVect[2]);
 			}
 
-			// handle arg 3
+			//Handle arg 3.
 			if(strcmp(argVect[3], "-nolock") == 0){
-				no_lock = true; // wants no locking mechanism
+				no_lock = true;//Wants no locking mechanism.
 			}
+
 			else{
 				cerr << "ERROR: Expected \"-nolock\" command." << endl;
 
 				exit(-1);
 			}
 
-			// handle arg 4
+			//Handle arg 4.
+			/*
 			if(strcmp(argVect[4], ">") == 0){
 				outputRedirect = true;
 			}
@@ -247,14 +290,15 @@ int main(int ARG_COUNT, char* argVect[]){
 
 				exit(-1);
 			}
+			*/
 
-			// handle arg 5
+			//Handle arg 5.
 			//FIXME mayebe file names have a specific structure to follow, do we check?
 			fileName = argVect[5];
 
-			
-	//		if(outputRedirect == true){
-		/*		freopen(cStringToCxx(fileName), "w", stdout);
+			/*
+			if(outputRedirect == true){
+				freopen(cStringToCxx(fileName), "w", stdout);
 			}
 
 			else if(errorRedirect == true){
@@ -271,84 +315,90 @@ int main(int ARG_COUNT, char* argVect[]){
 			*/
 		}
 		
-		if(ARG_COUNT == 4){ // handle 4 args
-	
+		if(ARG_COUNT == 4){//Handle 4 args.
 			numOfThreads = stoi(argVect[2]);
 
 			if(strcmp(argVect[3], "-nolock") == 0){
 				no_lock = true;
 			}
+
 			else{
 				cerr << "ERROR: Expected the \"-nolock\" command." << endl;
 
 				exit(-1);
 			}
 		}
-		else if(ARG_COUNT == 3){	// handle 3 args
 
+		else if(ARG_COUNT == 3){//Handle 3 args.
 			if(stoi(argVect[2]) > numOfCollatz){
 				cerr << "ERROR: The number of threads cannot exceed the number of collatz sequences to compute." << endl;
 
 				exit(-1);
 			}
+
 			else{
 				numOfThreads = stoi(argVect[2]);
 			}
-
 		}
 
+		thread threads[numOfThreads];//Make the threads.
 
+		/*
+		Iterate through all threads and pass each thread a starting method.
+		This startmethod will:
 
-		// code below is
-		// common to any number of arguments
-		thread threads[numOfThreads]; // make the threads
+		1. Compute the collatz for the next number in the range, to compute and increment the number waiting to be computed.
+		2. Join the threads together.
+		3. Delete the array.
+		4. Stop the timer.
+		5. Display the computedTimes.
+		*/
 
-		// iterate through all threads and pass each thread a starting method
-		// this startmethod will:
-		// 1. Compute the collatz for the next number in the range
-		//    to compute and incremente the number waiting to be computed
-		// 2. Join the threads together FIXME
-		// 3. delete the array;
-		// 4. stop the timer
-		// 5. display the computedTimes
-		for(int i = 0; i < numOfThreads; i++){ // iterate through all threads
-			threads[i] = thread(threadInstructions); // pass each thread a starting point
+		for(int i = 0; i < numOfThreads; i++){//Iterate through all threads.
+			threads[i] = thread(threadInstructions);//Pass each thread a starting point.
 		}
-
-
-		// put a lock here since you have the join after this rather than before
-		// so multiple threads might get access to this == not necessarily race condition but seems more wasteful without lock
-		mx2.lock();	
-		computedTimes.at(0) = computeCollatz(1);
-		mx2.unlock();
 
 		for(int i = 0; i < numOfThreads; i++){
 			threads[i].join();
 		}
 
-		// delete array; FIXME may need to uncomment this if need freopen stuff
+		//Delete array; FIXME may need to uncomment this if need freopen stuff
 
 		time.stop();
 
-		// 5
-		for(long unsigned int i = 0; i < computedTimes.size(); i++){
-			cout << i + 1 << "," << computedTimes.at(i) << endl;
+		/*
+		for(long unsigned int i = 0; i < histogram.getFrequencies().size(); i++){
+			cout << i << "," << histogram.getFrequencies().at(i) << endl;
+		}
+		*/
+
+		for(long unsigned int i = 0; i < computedIterations.size(); i++){
+			frequency.at(i) = searchVector(computedIterations.at(i));
 		}
 
+		for(long unsigned int i = 0; i < frequency.size(); i++){
+			cout << i << "," << frequency.at(i) << endl;
+		}
 
-		// where I started implementing frequency counter
-		// 
-		int n = computedTimes.size();
+		/*
+		for(long unsigned int i = 0; i < computedIterations.size(); i++){
+			cout << i << "," << computedIterations.at(i) << endl;
+		}
+		*/
+
+		/*
+		//Where I started implementing frequency counter.
 		int count = 0;
-		int x = 3; // x should be i of the outer loop that encapsulates this function. So two loops total
-		for(int i = 0; i < n; i++){
+		int x = 3;//x should be i of the outer loop that encapsulates this function. So two loops total.
+
+		for(long unsigned int i = 0; i < computedTimes.size(); i++){
 			if(computedTimes.at(i) == x){
 				count++;
 			}
-		}	
+		}
+		*/
 
-
-		cerr << numOfCollatz << ", " << numOfThreads << ", " << time.getElapsedTime() << endl;
+		cerr << numOfCollatz << "," << numOfThreads << "," << time.getElapsedTime() << endl;
 
 		return 0;
 	}
