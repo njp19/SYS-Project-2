@@ -27,24 +27,24 @@ static int range_to_compute_collatz_min = 2;//2 min means cannot ask program to 
 static int range_to_compute_collatz_max = 1000000;//max means cannot ask program to compute collatz sequences for numbers greater than 10000.
 
 mutex mx;
-int currentCollatz = 2;
-int numOfCollatz = 0;
+long currentCollatz = 2;
+long numOfCollatz = 0;
+int numOfThreads = 0;
 //Frequency histogram;
 //char* array; FIXME may need to uncomment.
 bool no_lock = false;
-vector<int> frequency;
-vector<int> nthTerm;
-vector<int> computedIterations;
+vector<long> frequency;
+vector<long> computedIterations;
 static int COLLATZ_STOPPING_POINT = 1;
 
-bool isEven(int numToCheck){
+bool isEven(long numToCheck){
 	return numToCheck % 2 == 0;
 }
 
 //Method below computes the full collatz sequence for the _1stTerm given.
-int computeCollatz(int _1stTerm){
-	int numOfIterations = 0;
-	int valueSoFar = _1stTerm;
+long computeCollatz(long _1stTerm){
+	long numOfIterations = 0;
+	long valueSoFar = _1stTerm;
 
 	//if(_1stTerm != COLLATZ_STOPPING_POINT){//Done if sequence computation complete.
 		while(valueSoFar != COLLATZ_STOPPING_POINT){//Iterate while not complete.
@@ -63,9 +63,11 @@ int computeCollatz(int _1stTerm){
 
 		//histogram.incrementFrequency(numOfIterations);
 
-		//if((numOfIterations >= 0) && ()i){
-			//frequency.at(numOfIterations) += 1;
-		//}
+		/*
+		if(numOfIterations < numOfCollatz){
+			frequency.at(numOfIterations) += 1;
+		}
+		*/
 	//}
 
 	/*
@@ -97,39 +99,44 @@ int computeCollatz(int _1stTerm){
 
 void threadInstructions(){
 	//Iterates through all collatz.
-	while(currentCollatz <= numOfCollatz){//Keep going until last collatz.
+	while(currentCollatz < numOfCollatz){//Keep going until last collatz.
 		//Lock variable right here so other threads can't change it at the same time causing undefined behavior.
-		if(no_lock == true){//If user wants to avoid locking mechanism.
+		if((no_lock == true) || (numOfThreads == 1)){//If user wants to avoid locking mechanism.
 			//computedTimes.at(currentCollatz - 1) = computeCollatz(currentCollatz);
-			if(currentCollatz <= numOfCollatz){
-				computedIterations.at(currentCollatz) = computeCollatz(currentCollatz);
+			if(currentCollatz < numOfCollatz){
+				long tempValue = computeCollatz(currentCollatz);
+
+				computedIterations.at(currentCollatz) = tempValue;
+
+				if(tempValue < numOfCollatz){
+					frequency.at(tempValue) += 1;
+				}
 			}
 
 			currentCollatz++;
 		}
 
-		else {//User wants to keep locking mechanism.
+		else{//User wants to keep locking mechanism.
 			mx.lock();
-			int tempCollatz = currentCollatz;
+
+			long tempCollatz = currentCollatz;
 
 			++currentCollatz;
+
 			mx.unlock();
 
-			if(tempCollatz <= numOfCollatz){
-				int tempValue = computeCollatz(tempCollatz);
+			if(tempCollatz < numOfCollatz){
+				long tempValue = computeCollatz(tempCollatz);
 
 				computedIterations.at(tempCollatz) = tempValue;
 
-				/*
 				mx.lock();
 
-				if(tempValue <= numOfCollatz){
+				if(tempValue < numOfCollatz){
 					frequency.at(tempValue) += 1;
 				}
 
 				mx.unlock();
-				//histogram.incrementFrequency(tempValue);
-				*/
 			}
 		}
 	}
@@ -164,7 +171,7 @@ bool isNumber(string word){
 }
 
 
-bool isOutOfRange(int last){//Last & greatest number to compute collatz for.
+bool isOutOfRange(long last){//Last & greatest number to compute collatz for.
 	if((last < range_to_compute_collatz_min) || (last > range_to_compute_collatz_max)){
 		return true;
 	}
@@ -180,7 +187,7 @@ void handleOutOfRangeException(){
 }
 
 
-void handleNanException(int argNum){
+void handleNanException(long argNum){
 	if(argNum == 1){	
 		cerr << "ERROR: Expected the number of collatz sequences to compute." << endl;
 	}
@@ -192,8 +199,8 @@ void handleNanException(int argNum){
 	exit(-1);
 }
 
-int searchVector(int value){
-	int frequency = 0;
+long searchVector(long value){
+	long frequency = 0;
 
 	if(value != 0){
 		for(long unsigned int i = 0; i < computedIterations.size(); i++){
@@ -209,7 +216,7 @@ int searchVector(int value){
 }
 
 int main(int ARG_COUNT, char* argVect[]){
-	int numOfThreads = 0;
+	//long numOfThreads = 0;
 	/*
 	bool outputRedirect = false;
 	bool outputRedirectAppend = false;
@@ -243,7 +250,7 @@ int main(int ARG_COUNT, char* argVect[]){
 		numOfCollatz = stoi(argVect[1]);
 		//histogram.initVector(numOfCollatz);
 
-		for(int i = 0; i <= numOfCollatz; i++){
+		for(long i = 0; i < numOfCollatz; i++){
 			computedIterations.push_back(0);
 			frequency.push_back(0);
 		}
@@ -376,16 +383,10 @@ int main(int ARG_COUNT, char* argVect[]){
 		time.stop();
 
 		/*
-		for(long unsigned int i = 0; i < histogram.getFrequencies().size(); i++){
-			cout << i << "," << histogram.getFrequencies().at(i) << endl;
+		for(int i = 0; i < numOfCollatz; i++){
+			frequency.at(i) = searchVector(i);
 		}
 		*/
-
-		for(int i = 0; i <= numOfCollatz; i++){
-			frequency.at(i) = searchVector(i);
-			//frequency.at(i) = searchVector(computedIterations.at(i));
-			//frequency.at(computedIterations.at(i)) = searchVector(computedIterations.at(i));
-		}
 
 		for(long unsigned int i = 0; i < frequency.size(); i++){
 			cout << i << "," << frequency.at(i) << endl;
