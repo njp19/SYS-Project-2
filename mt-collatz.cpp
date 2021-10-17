@@ -103,35 +103,52 @@ void threadInstructions(){
 
 	//Iterates through all collatz.
 	while(currentCollatz < numOfCollatz){//Keep going until last collatz.
+		
 		//Lock variable right here so other threads can't change it at the same time causing undefined behavior.
 		if(no_lock == true){//If user wants to avoid locking mechanism.
+			
+
+			// CS
 			tempCollatz = currentCollatz;
 			++currentCollatz;
-			tempValue = computeCollatz(tempCollatz);
-			computedIterations.at(tempCollatz) = tempValue;
+			// END CS
 
-			if(tempValue < numOfCollatz){
-				frequency.at(tempValue) += 1;
+
+
+			if(tempCollatz < numOfCollatz){ // same
+				tempValue = computeCollatz(tempCollatz); // same
+				computedIterations.at(tempCollatz) = tempValue; // same
+
+
+				//if(tempValue < numOfCollatz){
+					frequency.at(tempValue) += 1; // same
+				//}
+
 			}
 		}
 
 		else{//User wants to keep locking mechanism.
+
+			// lock
 			mx.lock();
 
+			// CS
 			tempCollatz = currentCollatz;
-
 			++currentCollatz;
+			// END CS
 
 			mx.unlock();
+			// END lock
 
-			if(tempCollatz < numOfCollatz){
-				tempValue = computeCollatz(tempCollatz);
-				computedIterations.at(tempCollatz) = tempValue;
 
-				mx.lock();
+			if(tempCollatz < numOfCollatz){ // same
+				tempValue = computeCollatz(tempCollatz); // same
+				computedIterations.at(tempCollatz) = tempValue; // same
+
+				mx.lock(); // diff
 
 				//if(tempValue < numOfCollatz){
-					frequency.at(tempValue) += 1;
+					frequency.at(tempValue) += 1; // same
 				//}
 
 				mx.unlock();
