@@ -23,7 +23,6 @@ using std::thread;
 using std::stoi;
 
 static int range_to_compute_collatz_min = 2;//2 min means cannot ask program to compute collatz sequences for numbers smaller that 2.
-static int range_to_compute_collatz_max = 1000000;//max means cannot ask program to compute collatz sequences for numbers greater than 10000.
 
 mutex mx;
 long currentCollatz = 2;
@@ -137,7 +136,7 @@ bool isNumber(string word){
  * @return true or false
 */
 bool isOutOfRange(long last){//Last & greatest number to compute collatz for.
-	if((last < range_to_compute_collatz_min) || (last > range_to_compute_collatz_max)){
+	if(last < range_to_compute_collatz_min){
 		return true;
 	}
 
@@ -146,7 +145,7 @@ bool isOutOfRange(long last){//Last & greatest number to compute collatz for.
 
 //Prints this message if the user vialates the checks that are in the above function.
 void handleOutOfRangeException(){
-	cerr << "ERROR: Only numbers between " << range_to_compute_collatz_min << " and " << range_to_compute_collatz_max << " are acceptable." << endl;
+	cerr << "ERROR: Only numbers above " << range_to_compute_collatz_min << endl;
 
 	exit(-1);
 }
