@@ -17,7 +17,10 @@ void Timer::stop(){
 	elapsedTime = endTime - startTime;
 }
 
-//Returns the elapsed time
+/*
+ * @return elapsedTimer
+ * Returns the elapsed time.
+*/
 double Timer::getElapsedTime(){
 	return elapsedTime.count();
 }

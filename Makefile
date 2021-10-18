@@ -8,7 +8,7 @@ CXX = g++
 CXXFLAGS = -g -std=c++11 -Wall -lpthread -Werror=return-type -Werror=uninitialized
 
 #The list of object files of the classes.
-SOURCES = Timer.o Frequency.o
+SOURCES = Timer.o
 
 #Names the executable mt-collatz and compiles the file.
 mt-collatz: mt-collatz.cpp $(SOURCES)

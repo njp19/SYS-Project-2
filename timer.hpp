@@ -4,6 +4,7 @@
  * @info course COP4634
 */
 
+//Makes sure that this class isnt double included.
 #ifndef TIMER_HPP
 #define TIMER_HPP
 
@@ -11,6 +12,10 @@
 #include <ctime>
 #include <chrono>
 
+/*
+ * Class that is a timer that measures the duration of the program.
+ * See Timer.cpp. It has detailed explanation of tthe contents here.
+*/
 using namespace std::chrono;
 
 class Timer{
